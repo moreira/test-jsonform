@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="description" content="" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>testing jsonform</title>
+    <link
+      rel="stylesheet"
+      href="../node_modules/bootstrap/dist/css/bootstrap.min.css"
+    />
+    <link
+      rel="stylesheet"
+      href="../node_modules/bootstrap/dist/css/bootstrap-theme.min.css"
+    />
+    <script src="../node_modules/jquery/dist/jquery.min.js"></script>
+    <script src="../node_modules/bootstrap/dist/js/bootstrap.min.js"></script>
+    <script src="../node_modules/underscore/underscore-min.js"></script>
+    <script src="../node_modules/JSV/lib/jsv.js"></script>
+    <script src="../node_modules/jsonform/lib/jsonform.js"></script>
+    <script src="https://maps.googleapis.com/maps/api/js?key=API_KEY&libraries=places"></script>
+  </head>
+  <body>
+    <form></form>
+    <div id="res" class="alert"></div>
+    <script type="text/javascript">
+      JSONForm.fieldTypes["googlebusiness"] = {
+        // The template describes the HTML that the field will generate.
+        // It uses Underscore.js templates.
+        template: `
+          <div>
+              <input
+                id="<%=node.id%>"
+                name="<%=node.name%>"
+                type="hidden"
+                value="<%=value%>"
+              />
+              <input
+                id="<%=node.id%>_autocomplete"
+                placeholder="Enter a place"
+                type="text"
+              />
+          </div>`,
+
+        // Set the inputfield flag when the field is a real input field
+        // that produces a value. Set the array flag when it creates an
+        // array of fields. Both flags are mutually exclusive.
+        // Do not set any of these flags for containers and other types
+        // of fields.
+        inputfield: true,
+
+        // Most real input fields should set this flag that wraps the
+        // generated content into the HTML code needed to report errors
+        fieldtemplate: true,
+
+        // Return the root element created by the field
+        // (el is the DOM element whose id is node.id,
+        // this function is only useful when el is not the root
+        // element in the field's template)
+        getElement: function (el) {
+          // Adjust the following based on your template. In this example
+          // there is an additional <div> so we need to go one level up.
+          return $(el).get(0);
+        },
+
+        // This is where you can complete the data that will be used
+        // to run the template string
+        onBeforeRender: function (data, node) {
+          console.log(data);
+          console.log(node);
+        },
+
+        // This is where you can enhance the generated HTML by adding
+        // event handlers if needed
+        onInsert: function (evt, node) {
+          const input = document.getElementById(node.id + "_autocomplete");
+          const inputHidden = document.getElementById(node.id);
+          const autocomplete = new google.maps.places.Autocomplete(input, {
+            types: ["establishment"],
+            componentRestriction: {
+              country: ["US", "CA"],
+              fields: ["place_id", "geometry", "name"],
+            },
+          });
+          autocomplete.addListener("place_changed", () => {
+            console.log((inputHidden.value = autocomplete.getPlace().place_id));
+          });
+        },
+      };
+      $("form").jsonForm({
+        schema: {
+          type: "object",
+          properties: {
+            name: {
+              title: "Name",
+              type: "string",
+            },
+            birth_date: {
+              title: "Birth Date",
+              type: "string",
+            },
+            gender: {
+              title: "Gender",
+              type: "string",
+              enum: ["male", "female", "alien"],
+            },
+            companyname: {
+              title: "Company Name",
+              type: "string",
+            },
+          },
+        },
+        form: [
+          "name",
+          {
+            key: "birth_date",
+            type: "date",
+          },
+          {
+            key: "gender",
+            titleMap: {
+              male: "Dude",
+              female: "Dudette",
+              alien: "I'm from outer space!",
+            },
+          },
+          {
+            key: "companyname",
+            type: "googlebusiness",
+          },
+          {
+            type: "submit",
+            title: "Send",
+          },
+        ],
+        value: {
+          name: "aaaaa",
+          birth_date: "2022-05-03",
+          gender: "male",
+          companyname: "ChIJZXBHzOf2BFMRvDWDyvlI8h8",
+        },
+        onSubmit: function (errors, values) {
+          if (errors) {
+            $("#res").html(
+              "<p style='color:red'>" + JSON.stringify(errors) + "</p>"
+            );
+          } else {
+            $("#res").html(
+              "<p style='color:green'>" + JSON.stringify(values) + "</p>"
+            );
+          }
+        },
+      });
+    </script>
+  </body>
+</html>

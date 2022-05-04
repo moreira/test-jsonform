@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="description" content="" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>testing jsonform</title>
+    <link
+      rel="stylesheet"
+      href="../node_modules/bootstrap/dist/css/bootstrap.min.css"
+    />
+    <link
+      rel="stylesheet"
+      href="../node_modules/bootstrap/dist/css/bootstrap-theme.min.css"
+    />
+    <script src="../node_modules/jquery/dist/jquery.min.js"></script>
+    <script src="../node_modules/bootstrap/dist/js/bootstrap.min.js"></script>
+    <script src="../node_modules/underscore/underscore-min.js"></script>
+    <script src="../node_modules/JSV/lib/jsv.js"></script>
+    <script src="../node_modules/jsonform/lib/jsonform.js"></script>
+  </head>
+  <body>
+    <form></form>
+    <div id="res" class="alert"></div>
+    <script type="text/javascript">
+      JSONForm.fieldTypes["htmlsnippet"] = {
+        template: "<b>sss</b>",
+      };
+      $("form").jsonForm({
+        schema: {
+          type: "object",
+          properties: {
+            name: {
+              title: "Name",
+              description: "Nickname allowed",
+              type: "string",
+            },
+            birth_date: {
+              title: "Birth Date",
+              description: "Birth Date",
+              type: "string",
+            },
+            gender: {
+              title: "Gender",
+              description: "Your gender",
+              type: "string",
+              enum: ["male", "female", "alien"],
+            },
+          },
+        },
+        form: [
+          {
+            type: "submit",
+            title: "Roger",
+          },
+          {
+            key: "birth_date",
+            type: "date",
+          },
+          {
+            key: "gender",
+            titleMap: {
+              male: "Dude",
+              female: "Dudette",
+              alien: "I'm from outer space!",
+            },
+          },
+          "name",
+          {
+            type: "htmlsnippet",
+          },
+        ],
+        value: { birth_date: "2022-05-27", gender: "female", name: "ssss" },
+        onSubmit: function (errors, values) {
+          if (errors) {
+            $("#res").html(
+              "<p style='color:red'>" + JSON.stringify(errors) + "</p>"
+            );
+          } else {
+            $("#res").html(
+              "<p style='color:green'>" + JSON.stringify(values) + "</p>"
+            );
+          }
+        },
+      });
+    </script>
+  </body>
+</html>
